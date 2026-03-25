@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import EditorClient from './EditorClient'
 
 export default async function EditorPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: blocks } = await supabase

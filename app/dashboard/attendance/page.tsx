@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import AttendanceClient from './AttendanceClient'
 
 export default async function AttendancePage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: att } = await supabase

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import CheckinClient from './CheckinClient'
 
 export default async function CheckinPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const today = new Date().toISOString().split('T')[0]

@@ -3,7 +3,7 @@ import { STOIC_QUOTES, CTT, PSCHED, SUBJECTS, todayIdx, greeting, daysUntil } fr
 import TodayClient from './TodayClient'
 
 export default async function TodayPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const di      = todayIdx()
