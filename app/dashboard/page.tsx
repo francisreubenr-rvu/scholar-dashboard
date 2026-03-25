@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { STOIC_QUOTES, CTT, PSCHED, SUBJECTS, todayIdx, greeting, daysUntil } from '@/lib/data'
 import TodayClient from './TodayClient'
@@ -5,6 +6,10 @@ import TodayClient from './TodayClient'
 export default async function TodayPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/auth')
+  }
 
   const di      = todayIdx()
   const dateKey = new Date().toISOString().split('T')[0]
