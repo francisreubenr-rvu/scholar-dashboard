@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ScheduleBlock from '@/components/ScheduleBlock'
 import { DAYS, TASKS, COLORS, type Block } from '@/lib/data'
+import BottomNav from '@/components/BottomNav'
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
@@ -65,6 +66,7 @@ export default function TodayClient({
   const allPersonal = [...personalSchedule, ...customBlocks].sort((a, b) => a.s.localeCompare(b.s))
 
   return (
+    <>
     <div className="page-wrap">
       {/* HERO */}
       <div className="glass" style={{ padding:'32px 30px 28px', marginBottom:14, position:'relative', overflow:'hidden' }}>
@@ -134,5 +136,7 @@ export default function TodayClient({
       <div className="section-line">Study & Life Plan</div>
       {allPersonal.map((b, i) => <ScheduleBlock key={i} {...b} delay={i * 22} />)}
     </div>
+    <BottomNav />
+    </>
   )
 }
