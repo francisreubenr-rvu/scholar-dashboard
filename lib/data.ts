@@ -297,3 +297,15 @@ export function attColor(pct: number): string {
   if (pct >= 75) return '#c8922a'
   return '#b05040'
 }
+
+export const EXAMS = [
+  { label: 'CIE 2', date: '2026-04-10' },
+  { label: 'SEE',   date: '2026-05-15' },
+]
+
+export function nextExam(): { label: string; date: string; days: number } {
+  const now = new Date(); now.setHours(0,0,0,0)
+  const upcoming = EXAMS.find(e => new Date(e.date).getTime() >= now.getTime())
+  const exam = upcoming ?? EXAMS[EXAMS.length - 1]
+  return { ...exam, days: Math.max(0, Math.ceil((new Date(exam.date).getTime() - now.getTime()) / 86400000)) }
+}

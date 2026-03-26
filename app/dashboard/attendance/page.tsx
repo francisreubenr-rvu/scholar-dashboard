@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { SUBJECTS } from '@/lib/data'
 import SubjectCard from '@/components/SubjectCard'
 import BottomNav from '@/components/BottomNav'
+import ThemeToggle from '@/components/ThemeToggle'
 
 export default async function AttendancePage() {
   const supabase = await createClient()
@@ -27,6 +28,7 @@ export default async function AttendancePage() {
           ))}
         </div>
       </div>
+      <ThemeToggle />
       <BottomNav />
     </>
   )

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { STOIC_QUOTES, CTT, PSCHED, SUBJECTS, todayIdx, greeting, daysUntil } from '@/lib/data'
+import { STOIC_QUOTES, CTT, PSCHED, SUBJECTS, todayIdx, greeting, nextExam } from '@/lib/data'
 import TodayClient from './TodayClient'
 
 export default async function TodayPage() {
@@ -33,6 +33,7 @@ export default async function TodayPage() {
   }))
 
   const qi      = Math.floor(Date.now() / 86400000) % STOIC_QUOTES.length
+  const exam    = nextExam()
   const vals    = SUBJECTS.map(s => attMap[s.id].t > 0 ? (attMap[s.id].a / attMap[s.id].t) * 100 : null).filter((v): v is number => v !== null)
   const avgAtt  = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) + '%' : '—'
 
@@ -42,7 +43,7 @@ export default async function TodayPage() {
       greeting={greeting()}
       quote={STOIC_QUOTES[qi]}
       avgAtt={avgAtt}
-      daysTocie={daysUntil('2026-04-10')}
+      daysTocie={exam.days}
       collegeTT={CTT[di]}
       personalSchedule={PSCHED[di]}
       customBlocks={customBlocks}

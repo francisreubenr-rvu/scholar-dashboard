@@ -45,12 +45,13 @@ export default function AttModal({ subjectId, subjectName, attended, total, user
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                 <button className="att-btn" onClick={() => setter((v: number) => Math.max(0, v - 1))}>−</button>
                 <span style={{ flex:1, textAlign:'center', fontSize:22, fontWeight:700, color:'var(--txt)', fontFamily:'Cormorant Garamond,serif' }}>{val}</span>
-                <button className="att-btn" onClick={() => setter((v: number) => v + 1)}>+</button>
+                <button className="att-btn" onClick={() => setter((v: number) => label === 'Attended' ? Math.min(v + 1, t) : v + 1)}>+</button>
               </div>
             </div>
           ))}
         </div>
 
+        {a > t && <div style={{color:'#b05040',fontSize:11,marginBottom:8}}>⚠ Attended cannot exceed Total</div>}
         <div className="att-bar-bg" style={{ marginBottom:8 }}>
           <div className="att-bar-fill" style={{ width: `${Math.min(pct,100)}%`, background: color }} />
         </div>
@@ -58,7 +59,7 @@ export default function AttModal({ subjectId, subjectName, attended, total, user
 
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
           <button className="btn-amber" style={{ background:'var(--glass)', color:'var(--muted)' }} onClick={onClose}>Cancel</button>
-          <button className="btn-amber" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+          <button className="btn-amber" onClick={save} disabled={saving || a > t} style={{opacity: a > t ? 0.4 : 1}}>{saving ? 'Saving…' : 'Save'}</button>
         </div>
       </div>
     </div>

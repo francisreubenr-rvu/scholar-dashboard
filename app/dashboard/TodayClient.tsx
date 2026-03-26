@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ScheduleBlock from '@/components/ScheduleBlock'
-import { DAYS, TASKS, COLORS, type Block } from '@/lib/data'
+import { DAYS, TASKS, COLORS, type Block, nextExam } from '@/lib/data'
+import ThemeToggle from '@/components/ThemeToggle'
 import BottomNav from '@/components/BottomNav'
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -13,7 +14,6 @@ interface Props {
   greeting: string
   quote: { q: string; a: string }
   avgAtt: string
-  daysTocie: number
   collegeTT: Block[]
   personalSchedule: Block[]
   customBlocks: (Block & { id: string })[]
@@ -23,12 +23,15 @@ interface Props {
 }
 
 export default function TodayClient({
-  dayIdx, greeting, quote, avgAtt, daysTocie,
+  dayIdx, greeting, quote, avgAtt,
   collegeTT, personalSchedule, customBlocks,
   doneMap: initialDone, userId, dateKey,
 }: Props) {
   const [done, setDone]     = useState(initialDone)
   const [nextUp, setNextUp] = useState<(Block & { status: string }) | null>(null)
+  const exam                = nextExam()
+  const [saving, setSaving] = useState<string | null>(null)
+  const [error, setError]   = useState<string | null>(null)
   const supabase            = createClient()
   const d                   = new Date()
   const tasks               = TASKS[dayIdx]
@@ -57,10 +60,16 @@ export default function TodayClient({
   async function toggleTask(taskId: string) {
     const newVal = !done[taskId]
     setDone(prev => ({ ...prev, [taskId]: newVal }))
-    await supabase.from('checkins').upsert(
+    setSaving(taskId)
+    const { error: err } = await supabase.from('checkins').upsert(
       { user_id: userId, date: dateKey, task_id: taskId, done: newVal },
       { onConflict: 'user_id,date,task_id' }
     )
+    if (err) {
+      setDone(prev => ({ ...prev, [taskId]: !newVal }))
+      setError('Failed to save. Check your connection.')
+    }
+    setSaving(null)
   }
 
   const allPersonal = [...personalSchedule, ...customBlocks].sort((a, b) => a.s.localeCompare(b.s))
@@ -90,7 +99,7 @@ export default function TodayClient({
 
       {/* STATS */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:14 }}>
-        {[{ n: pct+'%', l:'Today Done' },{ n: daysTocie+'d', l:'Days to CIE 2' },{ n: avgAtt, l:'Avg Attend.' }].map(({ n, l }) => (
+        {[{ n: pct+'%', l:'Today Done' },{ n: exam.days+'d', l:'Days to '+exam.label },{ n: avgAtt, l:'Avg Attend.' }].map(({ n, l }) => (
           <div key={l} className="glass" style={{ padding:'16px 14px', textAlign:'center', position:'relative', overflow:'hidden' }}>
             <div style={{ position:'absolute', bottom:0, left:0, right:0, height:2, background:'linear-gradient(90deg,transparent,var(--steel),transparent)' }} />
             <div className="serif" style={{ fontSize:30, fontWeight:700, color:'var(--amber2)', lineHeight:1, marginBottom:5 }}>{n}</div>
@@ -117,7 +126,7 @@ export default function TodayClient({
         const isDone = !!done[t.id]
         return (
           <div key={t.id} className={`task-item${isDone ? ' done' : ''}`} style={{ animationDelay:`${i*28}ms` }} onClick={() => toggleTask(t.id)}>
-            <div className={`task-cb${isDone ? ' on' : ''}`} />
+            <div className={`task-cb${isDone ? ' on' : ''}`}>{saving === t.id ? <span style={{fontSize:9,color:'var(--muted)'}}>…</span> : null}</div>
             <div>
               <div className="task-lbl">{t.l}</div>
               {t.s && <div className="task-sub">{t.s}</div>}
@@ -129,13 +138,20 @@ export default function TodayClient({
       {/* COLLEGE TT */}
       <div className="section-line">College Timetable</div>
       {collegeTT.length
-        ? collegeTT.map((b, i) => <ScheduleBlock key={i} {...b} delay={i * 32} />)
+        ? collegeTT.map((b, i) => <ScheduleBlock key={i} {...b} delay={i * 32} isNow={nextUp?.s === b.s && nextUp?.status === 'now'} />)
         : <p style={{ color:'var(--muted)', fontSize:13, padding:'8px 0' }}>No classes today.</p>}
 
       {/* PERSONAL PLAN */}
       <div className="section-line">Study & Life Plan</div>
-      {allPersonal.map((b, i) => <ScheduleBlock key={i} {...b} delay={i * 22} />)}
+      {allPersonal.map((b, i) => <ScheduleBlock key={i} {...b} delay={i * 22} isNow={nextUp?.s === b.s && nextUp?.status === 'now'} />)}
     </div>
+    {error && (
+      <div style={{position:'fixed',top:16,left:'50%',transform:'translateX(-50%)',zIndex:3000,background:'rgba(176,80,64,0.95)',color:'#fff',padding:'10px 18px',borderRadius:10,fontSize:13,fontWeight:600,display:'flex',gap:12,alignItems:'center',boxShadow:'0 4px 20px rgba(0,0,0,0.4)'}}>
+        {error}
+        <button onClick={() => setError(null)} style={{background:'none',border:'none',color:'#fff',cursor:'pointer',fontSize:16,lineHeight:1}}>✕</button>
+      </div>
+    )}
+    <ThemeToggle />
     <BottomNav />
     </>
   )
